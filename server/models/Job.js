@@ -12,6 +12,8 @@ const JobSchema = new mongoose.Schema({
   appliedDate: { type: Date, required: true },
   followUpDate: { type: Date },
   notes: { type: String },
+  resume: { type: String, required: true }, // Store file path or URL for the resume used
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
 });
 
 module.exports = mongoose.model('Job', JobSchema);

@@ -5,6 +5,7 @@ require('dotenv').config();
 const cron = require('node-cron');
 const nodemailer = require('nodemailer');
 const Job = require('./models/Job');
+require('./reminderService');
 
 const app = express();
 connectDB();
@@ -12,7 +13,11 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+
+app.use('/api/auth', require('./routes/auth'));
 app.use('/api/jobs', require('./routes/jobs'));
+// Serve uploaded resumes statically
+app.use('/uploads', express.static(require('path').join(__dirname, 'uploads')));
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({

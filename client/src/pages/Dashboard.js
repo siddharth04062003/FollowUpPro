@@ -1,38 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import api from '../api'; // Use your axios instance with JWT
 import JobForm from '../components/JobForm';
 import FilterBar from '../components/FilterBar';
 import JobTable from '../components/JobTable';
 
-const API_URL = 'http://localhost:5000/api/jobs';
-
 const Dashboard = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login');
+    }
+  }, [navigate]);
+
   const [jobs, setJobs] = useState([]);
   const [filter, setFilter] = useState({ status: '', date: '' });
   const [editingJob, setEditingJob] = useState(null);
 
   const fetchJobs = async () => {
-    const res = await axios.get(API_URL);
-    setJobs(res.data);
+    try {
+      const res = await api.get('/jobs');
+      setJobs(res.data);
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    }
   };
 
   useEffect(() => {
     fetchJobs();
+    // eslint-disable-next-line
   }, []);
 
   const handleAddOrEdit = async (jobData) => {
-    if (editingJob) {
-      await axios.put(`${API_URL}/${editingJob._id}`, jobData);
-      setEditingJob(null);
-    } else {
-      await axios.post(API_URL, jobData);
+    try {
+      if (editingJob) {
+        await api.put(`/jobs/${editingJob._id}`, jobData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        setEditingJob(null);
+      } else {
+        await api.post('/jobs', jobData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+      }
+      fetchJobs();
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
     }
-    fetchJobs();
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`${API_URL}/${id}`);
-    fetchJobs();
+    try {
+      await api.delete(`/jobs/${id}`);
+      fetchJobs();
+    } catch (err) {
+      if (err.response && err.response.status === 401) {
+        localStorage.removeItem('token');
+        navigate('/login');
+      }
+    }
   };
 
   const handleEditClick = (job) => {
@@ -46,13 +80,19 @@ const Dashboard = () => {
   });
 
   return (
-    <div className="container mx-auto py-8 px-2">
-      <h1 className="text-3xl font-bold mb-6 text-center">Job Application Tracker</h1>
-      <JobForm onSubmit={handleAddOrEdit} editingJob={editingJob} onCancel={() => setEditingJob(null)} />
-      <FilterBar filter={filter} setFilter={setFilter} />
-      <JobTable jobs={filteredJobs} onDelete={handleDelete} onEdit={handleEditClick} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex flex-col items-center py-10 px-2">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl p-8 border border-blue-100">
+        <h1 className="text-4xl font-extrabold mb-8 text-blue-700 text-center drop-shadow">Job Application Tracker</h1>
+        <div className="mb-8">
+          <JobForm onSubmit={handleAddOrEdit} editingJob={editingJob} onCancel={() => setEditingJob(null)} />
+        </div>
+        <div className="mb-8">
+          <FilterBar filter={filter} setFilter={setFilter} />
+        </div>
+        <JobTable jobs={filteredJobs} onDelete={handleDelete} onEdit={handleEditClick} />
+      </div>
     </div>
   );
 };
 
-export default Dashboard; 
+export default Dashboard;
