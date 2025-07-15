@@ -1,9 +1,11 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+
 import Dashboard from './pages/Dashboard';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Landing from './pages/Landing';
+import AdminDashboard from './pages/AdminDashboard';
 
 
 function Profile() {
@@ -19,11 +21,12 @@ function Profile() {
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/profile" element={<Profile />} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/profile" element={<Profile />} />
     </Routes>
   );
 }
